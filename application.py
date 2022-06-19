@@ -27,6 +27,10 @@ my_graph.add_directed_edge(e_vertex, d_vertex, 3.0)
 
 print("the weight: ", my_graph.get_weight(a_vertex, f_vertex))
 
+print()
+
+print(my_graph.breadth_first_search(a_vertex))
+
 # A -> B[label="2.0",weight="2.0"];
 # A -> F[label="9.0",weight="9.0"];
 # B -> C[label="8.0",weight="8.0"];

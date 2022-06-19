@@ -1,4 +1,5 @@
 import sys
+from queue import  *
 
 if __name__ == '__main__':
     if len(sys.argv) != 1:
@@ -18,8 +19,12 @@ class Graph:
         self.adjacency_list = {}
         self.edge_weights = {}
 
+    def __str__(self):
+        return self.adjacency_list[0][0]
+
     def add_vertex(self, new_vertex):
         self.adjacency_list[new_vertex] = []
+        print(self.adjacency_list[new_vertex])
 
     def add_edge(self, from_vertex, to_vertex, weight=1.0):
         """needed for assignment - assume the edge is not directed """
@@ -47,3 +52,50 @@ class Graph:
         # -----------add checks for  validity here-------
 
         return self.edge_weights[(from_vertex, to_vertex)]
+
+
+    def breadth_first_search(graph, start_vertex):
+        """Breadth-first search function"""
+        distances = dict()
+        discovered_set = set()
+        frontier_queue = Queue()
+        visited_list = []
+        print("from BFS:", start_vertex.label)
+
+        # start_vertex has a distance of 0 from itself
+        distances[start_vertex] = 0
+
+        frontier_queue.enqueue(start_vertex)  # Enqueue start_vertex in frontier_queue
+        discovered_set.add(start_vertex)  # Add start_vertex to discovered_set
+
+        while frontier_queue.list.head is not None:
+            current_vertex = frontier_queue.dequeue()
+            visited_list.append(current_vertex)
+            for adjacent_vertex in graph.adjacency_list[current_vertex]:
+                if adjacent_vertex not in discovered_set:
+                    frontier_queue.enqueue(adjacent_vertex)
+                    discovered_set.add(adjacent_vertex)
+
+                    # Distance of adjacent_vertex is 1 more than current_vertex
+                    distances[adjacent_vertex] = distances[current_vertex] + 1
+
+        named_list = []
+        for item in visited_list:
+            named_list.append(item.label)
+        return named_list
+
+
+    def depth_first_search(graph, start_vertex, visit_function):
+        """ Depth-first search function """
+        vertex_stack = [start_vertex]
+        visited_set = set()
+
+        while len(vertex_stack) > 0:
+            current_vertex = vertex_stack.pop()
+            if current_vertex not in visited_set:
+                visit_function(current_vertex)
+                visited_set.add(current_vertex)
+                for adjacent_vertex in graph.adjacency_list[current_vertex]:
+                    vertex_stack.append(adjacent_vertex)
+
+
