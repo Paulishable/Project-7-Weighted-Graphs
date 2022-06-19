@@ -29,7 +29,17 @@ print("the weight: ", my_graph.get_weight(a_vertex, f_vertex))
 
 print()
 
-print(my_graph.breadth_first_search(a_vertex))
+
+
+
+print("starting BFS with vertex A")
+for vertex in my_graph.breadth_first_search(a_vertex):
+    print(vertex.label, end = "")
+print()
+
+
+
+
 
 # A -> B[label="2.0",weight="2.0"];
 # A -> F[label="9.0",weight="9.0"];

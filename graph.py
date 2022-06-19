@@ -60,7 +60,6 @@ class Graph:
         discovered_set = set()
         frontier_queue = Queue()
         visited_list = []
-        print("from BFS:", start_vertex.label)
 
         # start_vertex has a distance of 0 from itself
         distances[start_vertex] = 0
@@ -79,10 +78,7 @@ class Graph:
                     # Distance of adjacent_vertex is 1 more than current_vertex
                     distances[adjacent_vertex] = distances[current_vertex] + 1
 
-        named_list = []
-        for item in visited_list:
-            named_list.append(item.label)
-        return named_list
+        return visited_list
 
 
     def depth_first_search(graph, start_vertex, visit_function):
