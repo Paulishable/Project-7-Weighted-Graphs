@@ -1,34 +1,51 @@
-import sys
-from queue import *
+"""main module for graph"""
 import math
+import operator
+from queue import Queue
 
 
 def main():
-    pass
+    """main stub for testing"""
 
 
 class Vertex:
+    """Vertex for the graph"""
+
     def __init__(self, label):
         if not isinstance(label, str):
             raise ValueError("Label is not a string")
         self.label = label
+        self.distance = math.inf
+        self.pred_vertex = None
+
+    def get_label(self):
+        """get label"""
+        return self.label
+
+    def set_label(self, a_label):
+        """set label"""
+        self.label = a_label
 
 
 class Graph:
+    """the main graph class"""
+
     def __init__(self):
         self.adjacency_list = {}
         self.edge_weights = {}
+
+    # print(f" %6.2f" % (weight_on(i, j)), end=" ")
 
     def __str__(self):
         string = "digraph G {\n"
         for item in self.adjacency_list:
             for subitem in self.adjacency_list[item]:
-
                 weight = self.get_weight(item.label, subitem.label)
 
-                string += f"{item.label}  ->  {subitem.label}[label=\"{weight}\",weight=\"{weight}\"]\n"
+                string += f"   {item.label} -> {subitem.label} " \
+                          f"[label=\"{weight}\",weight=\"{weight}\"];\n"
 
-        string += "}"
+        string += "}\n"
 
         return string
 
@@ -48,8 +65,6 @@ class Graph:
             if item.label == from_vertex_label:
                 for subitem in self.adjacency_list[item]:
                     if subitem.label == to_vertex_label:
-                        print("here in tester-from", item.label)
-                        print("here in tester-to", subitem.label)
                         return False
         return True
 
@@ -65,7 +80,7 @@ class Graph:
             raise ValueError("Label is not a Vertex")
         if not isinstance(to_vertex_label, str):
             raise ValueError("Label is not a Vertex")
-        if not isinstance(weight, float):
+        if not isinstance(weight, (float, int)):
             raise ValueError("Label is not a float")
 
         from_vertex = self.get_vertex(from_vertex_label)
@@ -92,13 +107,12 @@ class Graph:
         vertex_a = self.get_vertex(vertex_a_label)
         vertex_b = self.get_vertex(vertex_b_label)
 
-        self.add_directed_edge(vertex_a, vertex_b, weight)
-        self.add_directed_edge(vertex_b, vertex_a, weight)
+        self.add_directed_edge(vertex_a_label, vertex_b_label, weight)
+        self.add_directed_edge(vertex_b_label, vertex_a_label, weight)
         return self
 
     def get_weight(self, from_vertex_label, to_vertex_label):
         """return the weight for an edge"""
-        print("----------GETTING WEIGHT-----------", from_vertex_label, to_vertex_label)
 
         if not isinstance(from_vertex_label, str):
             raise ValueError("Label is not a string")
@@ -111,10 +125,27 @@ class Graph:
             raise ValueError("This vertex is not in the graph")
 
         if self.edge_does_not_exist(from_vertex_label, to_vertex_label):
-            print("edge doesn't  exist")
             return math.inf
 
         return float(self.edge_weights[(from_vertex_label, to_vertex_label)])
+
+    def get_distance(self, from_vertex, to_vertex):
+        """return the weight for an edge"""
+
+        if not isinstance(from_vertex, Vertex):
+            raise ValueError("Label is not a Vertex")
+        if not isinstance(to_vertex, Vertex):
+            raise ValueError("Label is not a Vertex")
+
+        # from_vertex = self.get_vertex(from_vertex)
+        # to_vertex = self.get_vertex(to_vertex_label)
+        if from_vertex is None or to_vertex is None:
+            raise ValueError("This vertex is not in the graph")
+
+        if self.edge_does_not_exist(from_vertex.label, to_vertex.label):
+            return math.inf
+
+        return float(self.edge_weights[(from_vertex.label, to_vertex.label)])
 
     def bfs(self, start_vertex_label):
         """Breadth-first search function"""
@@ -168,3 +199,59 @@ class Graph:
                     vertex_stack.append(adjacent_vertex)
 
         return the_DFS_list
+
+    def dijkstra_shortest_path(self, start_vertex_label):
+        start_vertex = self.get_vertex(start_vertex_label)
+        # Put all vertices in an unvisited queue.
+        unvisited_queue = []
+        for current_vertex in self.adjacency_list:
+            unvisited_queue.append(current_vertex)
+
+        # start_vertex has a distance of 0 from itself
+        start_vertex.distance = 0
+
+        # One vertex is removed with each iteration; repeat until the list is
+        # empty.
+        while len(unvisited_queue) > 0:
+
+            # Visit vertex with minimum distance from start_vertex
+            smallest_index = 0
+            for i in range(1, len(unvisited_queue)):
+                if unvisited_queue[i].distance < unvisited_queue[smallest_index].distance:
+                    smallest_index = i
+            current_vertex = unvisited_queue.pop(smallest_index)
+
+            # Check potential path lengths from the current vertex to all neighbors.
+            for adj_vertex in self.adjacency_list[current_vertex]:
+                edge_weight = self.edge_weights[(current_vertex.label, adj_vertex.label)]
+                alternative_path_distance = current_vertex.distance + edge_weight
+
+                # If shorter path from start_vertex to adj_vertex is found,
+                # update adj_vertex's distance and predecessor
+                if alternative_path_distance < adj_vertex.distance:
+                    adj_vertex.distance = alternative_path_distance
+                    adj_vertex.pred_vertex = current_vertex
+
+    def dsp(self, start_vertex_label, end_vertex_label):
+        # Start from end_vertex and build the path backwards.
+        self.dijkstra_shortest_path(start_vertex_label)
+        start_vertex = self.get_vertex(start_vertex_label)
+        end_vertex = self.get_vertex(end_vertex_label)
+        path = ''
+        current_vertex = end_vertex
+        while current_vertex is not start_vertex:
+            path = ' -> ' + str(current_vertex.label) + path
+            current_vertex = current_vertex.pred_vertex
+        path = start_vertex.label + path
+        return path
+
+    def dict_dsp_all(self, source):
+        self.dijkstra_shortest_path(source)
+        # Sort the vertices by the label for convenience; display shortest path for each vertex
+        # from vertex.label = source
+        for v in sorted(self.adjacency_list, key=operator.attrgetter("label")):
+            if v.pred_vertex is None and v is not self.get_vertex(source):
+                print("A to %s: no path exists" % v.label)
+            else:
+                print("A to %s: %s (total weight: %g)" % (v.label,
+                            self.dsp(self.get_vertex(source), v), v.distance))
