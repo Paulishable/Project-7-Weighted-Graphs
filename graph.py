@@ -104,8 +104,8 @@ class Graph:
 
     def add_undirected_edge(self, vertex_a_label, vertex_b_label, weight=1.0):
         """add an edge that is undirected"""
-        vertex_a = self.get_vertex(vertex_a_label)
-        vertex_b = self.get_vertex(vertex_b_label)
+        # vertex_a = self.get_vertex(vertex_a_label)
+        # vertex_b = self.get_vertex(vertex_b_label)
 
         self.add_directed_edge(vertex_a_label, vertex_b_label, weight)
         self.add_directed_edge(vertex_b_label, vertex_a_label, weight)
@@ -149,12 +149,15 @@ class Graph:
 
     def bfs(self, start_vertex_label):
         """Breadth-first search function"""
+        if not isinstance(start_vertex_label, str):
+            raise ValueError("start vertex label is not a string")
+
         start_vertex = self.get_vertex(start_vertex_label)
 
         if not isinstance(start_vertex, Vertex):
-            raise ValueError("Label is not a Vertex")
+            raise ValueError("start vertex is not a Vertex")
 
-        distances = dict()
+        distances = {}
         discovered_set = set()
         frontier_queue = Queue()
         visited_list = []
@@ -180,12 +183,15 @@ class Graph:
 
     def dfs(self, start_vertex_label):
         """ Depth-first search function """
+        if not isinstance(start_vertex_label, str):
+            raise ValueError("start vertex label is not a string")
+
         start_vertex = self.get_vertex(start_vertex_label)
 
         if not isinstance(start_vertex, Vertex):
-            raise ValueError("Label is not a Vertex")
+            raise ValueError("start vertex is not a Vertex")
 
-        the_DFS_list = []
+        the_dfs_list = []
 
         vertex_stack = [start_vertex]
         visited_set = set()
@@ -193,15 +199,23 @@ class Graph:
         while len(vertex_stack) > 0:
             current_vertex = vertex_stack.pop()
             if current_vertex not in visited_set:
-                the_DFS_list.append(current_vertex.label)
+                the_dfs_list.append(current_vertex.label)
                 visited_set.add(current_vertex)
                 for adjacent_vertex in self.adjacency_list[current_vertex]:
                     vertex_stack.append(adjacent_vertex)
 
-        return the_DFS_list
+        return the_dfs_list
 
     def dijkstra_shortest_path(self, start_vertex_label):
+        """dijkstra_shortest_path algorithm"""
+        if not isinstance(start_vertex_label, str):
+            raise ValueError("start vertex label is not a string")
+
         start_vertex = self.get_vertex(start_vertex_label)
+
+        if not isinstance(start_vertex, Vertex):
+            raise ValueError("start vertex is not a Vertex")
+
         # Put all vertices in an unvisited queue.
         unvisited_queue = []
         for current_vertex in self.adjacency_list:
@@ -233,25 +247,77 @@ class Graph:
                     adj_vertex.pred_vertex = current_vertex
 
     def dsp(self, start_vertex_label, end_vertex_label):
-        # Start from end_vertex and build the path backwards.
-        self.dijkstra_shortest_path(start_vertex_label)
+        """Start from end_vertex and build the path backwards."""
+        if not isinstance(start_vertex_label, str):
+            raise ValueError("start vertex label is not a string")
+        if not isinstance(end_vertex_label, str):
+            raise ValueError("end vertex label is not a string")
+
         start_vertex = self.get_vertex(start_vertex_label)
         end_vertex = self.get_vertex(end_vertex_label)
-        path = ''
+
+        if not isinstance(start_vertex, Vertex):
+            raise ValueError("start_vertex is not a Vertex")
+        if not isinstance(end_vertex, Vertex):
+            raise ValueError("end_vertex is not a Vertex")
+        self.dijkstra_shortest_path(start_vertex_label)
+
+        vertex_list = []
+        # path = ''
         current_vertex = end_vertex
         while current_vertex is not start_vertex:
-            path = ' -> ' + str(current_vertex.label) + path
+            # path = ' -> ' + str(current_vertex.label) + path
+            if current_vertex is None:
+                return math.inf, []
+            vertex_list.append(current_vertex.label)
             current_vertex = current_vertex.pred_vertex
-        path = start_vertex.label + path
-        return path
+        # path = start_vertex.label + path
+        vertex_list.append(start_vertex_label)
+        vertex_list.reverse()
+        return int(end_vertex.distance), vertex_list
 
-    def dict_dsp_all(self, source):
-        self.dijkstra_shortest_path(source)
-        # Sort the vertices by the label for convenience; display shortest path for each vertex
-        # from vertex.label = source
-        for v in sorted(self.adjacency_list, key=operator.attrgetter("label")):
-            if v.pred_vertex is None and v is not self.get_vertex(source):
-                print("A to %s: no path exists" % v.label)
+    def dsp2(self, start_vertex_label, end_vertex_label):
+        """for dsp_all -- returns no weights Start from end_vertex and build the path backwards"""
+        if not isinstance(start_vertex_label, str):
+            raise ValueError("start vertex label is not a string")
+        if not isinstance(end_vertex_label, str):
+            raise ValueError("end vertex label is not a string")
+
+        start_vertex = self.get_vertex(start_vertex_label)
+        end_vertex = self.get_vertex(end_vertex_label)
+
+        if not isinstance(start_vertex, Vertex):
+            raise ValueError("start_vertex is not a Vertex")
+        if not isinstance(end_vertex, Vertex):
+            raise ValueError("end_vertex is not a Vertex")
+        self.dijkstra_shortest_path(start_vertex_label)
+
+        vertex_list = []
+        # path = ''
+        current_vertex = end_vertex
+        while current_vertex is not start_vertex:
+            # path = ' -> ' + str(current_vertex.label) + path
+            if current_vertex is None:
+                return []
+            vertex_list.append(current_vertex.label)
+            current_vertex = current_vertex.pred_vertex
+        # path = start_vertex.label + path
+        vertex_list.append(start_vertex_label)
+        vertex_list.reverse()
+        return vertex_list
+
+    def dsp_all(self, source):
+        """self.dijkstra_shortest_path(source)
+        Sort the vertices by the label for convenience; display the shortest path for each vertex
+        from vertex.label = source"""
+        if not isinstance(source, str):
+            raise ValueError("source is not a string")
+
+        the_dictionary = {}
+        for current_vertex in sorted(self.adjacency_list, key=operator.attrgetter("label")):
+            if current_vertex.pred_vertex is None and current_vertex is not self.get_vertex(source):
+                the_dictionary[current_vertex.label] = self.dsp2(source, current_vertex.label)
             else:
-                print("A to %s: %s (total weight: %g)" % (v.label,
-                            self.dsp(self.get_vertex(source), v), v.distance))
+                the_dictionary[current_vertex.label] = self.dsp2(source, current_vertex.label)
+
+        return the_dictionary

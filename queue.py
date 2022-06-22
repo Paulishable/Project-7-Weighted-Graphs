@@ -1,8 +1,8 @@
-
 class Node:
     def __init__(self, initial_data):
         self.data = initial_data
         self.next = None
+
 
 class LinkedList:
     def __init__(self):
@@ -16,7 +16,6 @@ class LinkedList:
         else:
             self.tail.next = new_node
             self.tail = new_node
-
 
     def remove_after(self, current_node):
         # Special case, remove head
